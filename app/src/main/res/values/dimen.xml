@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="component_width">335dp</dimen>
+    <dimen name="component_mid_width">158dp</dimen>
+</resources>
