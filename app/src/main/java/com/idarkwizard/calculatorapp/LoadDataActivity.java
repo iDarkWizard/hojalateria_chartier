@@ -86,7 +86,7 @@ public class LoadDataActivity extends AppCompatActivity {
     private void startHome(Context context) {
 
         List<DataStorage> dataStorageList = new ArrayList<>();
-        URL resource = this.getClass().getClassLoader().getResource("target/classes/PreciosV2.xlsx");
+        URL resource = this.getClass().getClassLoader().getResource("/data.xlsx");
         try {
             LoadData.readExcelData(Paths.get(resource.toURI()).toFile(), dataStorageList);
         } catch (URISyntaxException e) {
