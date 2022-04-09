@@ -23,10 +23,9 @@ public class LoadData {
 
     private static String TAG = "LoadData";
 
-    public static void readExcelData(File inputFile, List<DataStorage> dataStorageList) {
+    public static void readExcelData(InputStream inputStream, List<DataStorage> dataStorageList) {
         Log.d(TAG, "readExcelData: ReadingExcelFile.");
         try {
-            InputStream inputStream = new FileInputStream(inputFile);
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
             readSheets(workbook, dataStorageList);
             Log.d(TAG, "readExcelData: Excel file readed.");
