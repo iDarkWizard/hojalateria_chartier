@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:textSize="17sp"
+    android:textColor="@color/text_secondary"
+    android:text="@string/results_default"
+    android:fontFamily="@font/inter_regular"
+    android:id="@+id/resultSlide">
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/results"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginTop="13dp"-->
+    <!--        android:textColor="@color/text_secondary"-->
+    <!--        android:text="@string/results_default"-->
+    <!--        android:fontFamily="@font/inter_regular"-->
+    <!--        android:textSize="17sp"-->
+    <!--        app:layout_constraintWidth_percent="0.7"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/results_title"-->
+    <!--        app:layout_constraintRight_toRightOf="parent"-->
+    <!--        app:layout_constraintLeft_toLeftOf="parent" />-->
+
+</TextView>

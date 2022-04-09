@@ -5,9 +5,12 @@
     <string name="tray_layout">Bandeja</string>
     <string name="table_layout">Forrar Mesa</string>
     <string name="width">Ancho</string>
+    <string name="quantity">Cantidad</string>
     <string name="length">Largo</string>
     <string name="thickness">Espesor</string>
+    <string name="nombre">Nombre</string>
     <string name="metric_hint">0 m</string>
+    <string name="unit_hint">0</string>
     <string name="list_input_default">Seleccione</string>
     <string name="splash_screen_title">Datos sin cargar</string>
     <string name="splash_screen_dialog">Antes de empezar carguemos la información necesaria.</string>
@@ -17,4 +20,6 @@
     <string name="results_title">Resultado</string>
     <string name="results_default">Ingrese los valores y presione calcular.</string>
     <bool name="loaded_data_key">false</bool>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

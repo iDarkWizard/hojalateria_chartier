@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_light"
+    tools:context=".fragments.AbstractFragment">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="1dp"
+        android:textColor="@color/text_primary"
+        android:text="@string/plate_layout"
+        android:fontFamily="@font/inter_bold"
+        android:textSize="34sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+
+        />
+
+
+    <!-- Thickness Container -->
+    <View
+        android:id="@+id/thickness_container"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="13dp"
+        app:layout_constraintWidth_percent="0.92"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/width_container"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
+
+    <!-- Thickness Label -->
+    <TextView
+        android:id="@+id/thickness_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:textColor="@color/text_secondary"
+        android:text="@string/thickness"
+        android:fontFamily="@font/inter_regular"
+        android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="@id/thickness_container"
+        app:layout_constraintLeft_toLeftOf="@id/thickness_container"
+        />
+
+    <!-- Thickness Input -->
+    <TextView
+        android:id="@+id/thickness_input"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="@string/list_input_default"
+        android:textColor="@color/text_primary"
+        android:textSize="22sp"
+        android:gravity="start|center_vertical"
+        android:background="@drawable/input_ba"
+        android:drawableStart="#00000000"
+        android:drawableEnd="#00000000"
+        android:drawablePadding="13dp"
+        app:layout_constraintWidth_percent="0.92"
+        app:layout_constraintLeft_toLeftOf="@id/thickness_container"
+        app:layout_constraintBottom_toBottomOf="@id/thickness_container"
+        tools:ignore="UseCompatTextViewDrawableXml" />
+
+    <View
+        android:id="@+id/selector_icon"
+        android:layout_width="14dp"
+        android:layout_height="9dp"
+        android:background="@drawable/ic_chevron_down"
+        android:layout_marginEnd="22dp"
+        app:layout_constraintRight_toRightOf="@+id/thickness_input"
+        app:layout_constraintBottom_toBottomOf="@id/thickness_input"
+        app:layout_constraintTop_toTopOf="@id/thickness_input"
+        />
+
+    <!-- Results title -->
+    <TextView
+        android:id="@+id/results_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:textColor="@color/text_primary"
+        android:text="@string/results_title"
+        android:fontFamily="@font/inter_bold"
+        android:textSize="34sp"
+        app:layout_constraintTop_toBottomOf="@id/thickness_input"
+        app:layout_constraintLeft_toLeftOf="@id/thickness_input" />
+
+    <!-- Results -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/results_view_pager"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        app:layout_constraintWidth_percent="0.7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/results_title"/>
+
+    <!-- BACK -->
+    <View
+        android:id="@+id/view_page_back"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="10dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/results_view_pager"
+        app:layout_constraintTop_toTopOf="@id/results_view_pager"
+        app:layout_constraintBottom_toBottomOf="@id/results_view_pager" />
+
+
+    <View
+        android:id="@+id/view_page_back_ic"
+        android:layout_width="9dp"
+        android:layout_height="14dp"
+        android:background="@drawable/ic_chevron_left"
+        android:visibility="gone"
+        app:layout_constraintRight_toRightOf="@id/view_page_back"
+        app:layout_constraintLeft_toLeftOf="@+id/view_page_back"
+        app:layout_constraintBottom_toBottomOf="@id/view_page_back"
+        app:layout_constraintTop_toTopOf="@id/view_page_back" />
+
+    <!-- NEXT -->
+    <View
+        android:id="@+id/view_page_next"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="10dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/results_view_pager"
+        app:layout_constraintTop_toTopOf="@id/results_view_pager"
+        app:layout_constraintBottom_toBottomOf="@id/results_view_pager" />
+
+
+    <View
+        android:id="@+id/view_page_next_ic"
+        android:layout_width="9dp"
+        android:layout_height="14dp"
+        android:background="@drawable/ic_chevron_left"
+        android:rotation="180"
+        android:visibility="gone"
+        app:layout_constraintRight_toRightOf="@id/view_page_next"
+        app:layout_constraintLeft_toLeftOf="@+id/view_page_next"
+        app:layout_constraintBottom_toBottomOf="@id/view_page_next"
+        app:layout_constraintTop_toTopOf="@id/view_page_next" />
+
+    <View
+        android:id="@+id/calc_btn"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="120sp"
+        android:background="@drawable/button"
+        app:layout_constraintWidth_percent="0.92"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/results_title"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/calc_btn"
+        android:textSize="15sp"
+        android:fontFamily="@font/inter_bold"
+        android:textColor="@color/white"
+        android:letterSpacing=".1"
+        app:layout_constraintLeft_toLeftOf="@+id/calc_btn"
+        app:layout_constraintRight_toRightOf="@+id/calc_btn"
+        app:layout_constraintTop_toTopOf="@+id/calc_btn"
+        app:layout_constraintBottom_toBottomOf="@id/calc_btn" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/center_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5"/>
+
+    <!-- Width Container -->
+    <View
+        android:id="@+id/width_container"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="13dp"
+        app:layout_constraintWidth_percent="0.43"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="@id/thickness_input" />
+
+    <!-- Width Label -->
+    <TextView
+        android:id="@+id/width_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:textColor="@color/text_secondary"
+        android:text="@string/width"
+        android:fontFamily="@font/inter_regular"
+        android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="@id/width_container"
+        app:layout_constraintLeft_toLeftOf="@id/width_container" />
+
+    <!-- Width Input -->
+    <EditText
+        android:id="@+id/width_edit_text"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="@string/metric_hint"
+        android:textColor="@color/text_primary"
+        android:textSize="22sp"
+        android:inputType="numberDecimal"
+        android:background="@drawable/input_ba"
+        android:drawableStart="#00000000"
+        android:drawableEnd="#00000000"
+        android:drawablePadding="13dp"
+        app:layout_constraintWidth_percent="0.43"
+        app:layout_constraintLeft_toLeftOf="@id/width_container"
+        app:layout_constraintBottom_toBottomOf="@id/width_container" />
+
+
+
+    <!-- Length Container -->
+    <View
+        android:id="@+id/length_container"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="13dp"
+        app:layout_constraintWidth_percent="0.43"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintRight_toRightOf="@id/thickness_input" />
+
+    <!-- Length Label -->
+    <TextView
+        android:id="@+id/length_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:textColor="@color/text_secondary"
+        android:text="@string/length"
+        android:fontFamily="@font/inter_regular"
+        android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="@id/length_container"
+        app:layout_constraintLeft_toLeftOf="@id/length_container"
+        />
+
+    <!-- Length Input -->
+    <EditText
+        android:id="@+id/length_edit_text"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="@string/metric_hint"
+        android:textColor="@color/text_primary"
+        android:textSize="22sp"
+        android:inputType="numberDecimal"
+        android:background="@drawable/input_ba"
+        android:drawableStart="#00000000"
+        android:drawableEnd="#00000000"
+        android:drawablePadding="13dp"
+        app:layout_constraintWidth_percent="0.43"
+        app:layout_constraintLeft_toLeftOf="@id/length_container"
+        app:layout_constraintBottom_toBottomOf="@id/length_container"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
