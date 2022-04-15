@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">calculatorapp</string>
+    <string name="app_name">ChartierApp</string>
     <string name="plate_layout">Chapas</string>
     <string name="steel_layout">Acero Inoxidable</string>
     <string name="tray_layout">Bandeja</string>

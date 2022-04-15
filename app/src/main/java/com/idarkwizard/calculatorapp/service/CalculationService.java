@@ -23,6 +23,9 @@ public class CalculationService {
                                             "Plegado láser: %.2f $",
                                             "Corte plasma: %.2f $",
                                             "Plgado plasma: %.2f $"};
+    private static final String[] GALVANIZADA = {"Precio: %.2f $",
+                                                 "Fraccionado: %.2f $",
+                                                 "Entero: %.2f $"};
     private static final String[] STEELS = {"Precio B: %.2f $",
                                             "Precio 0: %.2f $"};
     private static final String TRAY = "Bandeja: %.2f $";
@@ -68,6 +71,9 @@ public class CalculationService {
                 break;
             case "bandeja":
                 results =  buildTray(width, length, quantity, itemsToCalculate);
+                break;
+            case "chapa_galvanizada":
+                results = buildGalvanizada(width, length, quantity, itemsToCalculate);
                 break;
             default:
                 results =  buildPlates(length, length, quantity, selected, itemsToCalculate);
@@ -142,6 +148,22 @@ public class CalculationService {
 
         List<String> results = new ArrayList<>();
         results.add(String.format(TABLE, result));
+        return results;
+    }
+
+    private static List<String> buildGalvanizada(Double width, Double legnth, Integer quantity,
+                                                 List<Double> itemsToCalculate) {
+        Double precio = width * legnth * quantity * itemsToCalculate.get(0);
+        Double fragmentada = width * legnth * quantity * itemsToCalculate.get(1);
+
+        List<String> results = new ArrayList<>();
+
+        if(fragmentada > 0) {
+            results.add(String.format(GALVANIZADA[2], precio));
+            results.add(String.format(GALVANIZADA[1], fragmentada));
+        } else {
+            results.add(String.format(GALVANIZADA[0], precio));
+        }
         return results;
     }
 

@@ -30,10 +30,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class LoadDataActivity extends AppCompatActivity {
 
@@ -73,31 +75,7 @@ public class LoadDataActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (data == null)
             return;
-        saveCache(sharedPref, data);
         startHome();
-    }
-
-
-    private void saveCache(SharedPreferences sharedPref, Intent data) {
-        int extrasCount = data.getExtras()
-                .size();
-        SharedPreferences.Editor editor = sharedPref.edit();
-        List<String> keys = new ArrayList<>(data.getExtras()
-                .keySet());
-        for (int i = 0; i < extrasCount; i++) {
-            editor.putString(keys.get(i), data.getStringExtra(keys.get(i)));
-        }
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        editor.putBoolean("loaded_data_key", true);
-        editor.putString("last_loaded", dateFormat.format(calendar.getTime()));
-        editor.apply();
-    }
-
-    private void unsaveCache(SharedPreferences sharedPref) {
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean("loaded_data_key", false);
-        editor.apply();
     }
 
     @Override
@@ -129,6 +107,13 @@ public class LoadDataActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
+            try {
+                new FilerPermissions().execute("file_permssions").get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             super.onPreExecute();
             showDialog(PROGRESS_BAR_TYPE);
         }
@@ -137,7 +122,6 @@ public class LoadDataActivity extends AppCompatActivity {
         protected String doInBackground(String... f_url) {
             int count;
             try {
-                checkFilePermissions();
                 URL url = new URL(f_url[0]);
                 URLConnection connection = url.openConnection();
                 connection.connect();
@@ -177,11 +161,18 @@ public class LoadDataActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             LoadData.readExcelData(file, dataStorageList);
-            Intent loaded = LoadData.finishLoad(dataStorageList);
-            saveCache(sharedPref, loaded);
-            dismissDialog(PROGRESS_BAR_TYPE);
+            LoadDataV2.finishLoad(dataStorageList, sharedPref, context);
             startActivity(new Intent(context, MainActivity.class));
-            finish();
+            dismissDialog(PROGRESS_BAR_TYPE);
+        }
+    }
+
+    public class FilerPermissions extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            checkFilePermissions();
+            return "ok";
         }
     }
 
@@ -192,12 +183,12 @@ public class LoadDataActivity extends AppCompatActivity {
             int writeCheck = this.checkSelfPermission("Manifest.permission.WRITE_EXTERNAL_STORAGE");
             if (readCheck != 0) {
                 this.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1001);
-            } else{
+            } else {
                 Log.d(TAG, "checkBTPermissions:  No need to check permissions. SDK version < LLOLIPOP.");
             }
             if (writeCheck != 0) {
                 this.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1001);
-            } else{
+            } else {
                 Log.d(TAG, "checkBTPermissions:  No need to check permissions. SDK version < LLOLIPOP.");
             }
         }

@@ -2,10 +2,13 @@ package com.idarkwizard.calculatorapp.config;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,6 +19,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.idarkwizard.calculatorapp.LoadDataActivity;
+import com.idarkwizard.calculatorapp.MainActivity;
 import com.idarkwizard.calculatorapp.R;
 import com.idarkwizard.calculatorapp.domain.DataStorage;
 import com.idarkwizard.calculatorapp.service.UtilService;
@@ -29,7 +34,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,21 +46,20 @@ import java.util.Map;
 public class LoadDataV2 extends AppCompatActivity {
 
     private static final String TAG = "LoadData";
-
-    private List<DataStorage> dataStorageList;
-
-    private List<String> pathList, fileNameList;
-    private File[] listFile;
     File file;
-
     View directoryBackBtn;
-
     ArrayList<String> pathHistory;
     TextView actualDirectory;
     String lastDirectory;
     int count = 0;
-
     ListView lvInternalStorage;
+    private List<DataStorage> dataStorageList;
+    private List<String> pathList, fileNameList;
+    private File[] listFile;
+
+    private void onPreCreation(Bundle savedInstance) {
+
+    }
 
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: new Activity created");
@@ -85,13 +91,19 @@ public class LoadDataV2 extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 lastDirectory = pathHistory.get(count);
-                if (adapterView.getItemAtPosition(i).toString().endsWith(".xlsx")) {
+                if (adapterView.getItemAtPosition(i)
+                        .toString()
+                        .endsWith(".xlsx")) {
                     Log.d(TAG, "lvInternalStorage: Selected a file for upload: " + lastDirectory);
-                    readExcelData(lastDirectory + "/" + adapterView.getItemAtPosition(i).toString());
-                    finishLoad();
+                    readExcelData(lastDirectory + "/" + adapterView.getItemAtPosition(i)
+                            .toString());
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+                    LoadDataV2.unsaveCache(sharedPreferences);
+                    finishLoad(dataStorageList, sharedPreferences, view.getContext());
+                    startActivity(new Intent(view.getContext(), MainActivity.class));
                 } else {
                     String newPath = pathHistory.get(count) + (String) adapterView.getItemAtPosition(i);
-                    count ++;
+                    count++;
                     pathHistory.add(count, newPath);
                     checkInternalStorage();
                     Log.d(TAG, "lvInternalStorage: " + pathHistory.get(count));
@@ -109,7 +121,8 @@ public class LoadDataV2 extends AppCompatActivity {
         checkInternalStorage();
     }
 
-    public void finishLoad() {
+    public static void finishLoad(List<DataStorage> dataStorageList, SharedPreferences sharedPreferences,
+                               Context context) {
         Log.d(TAG, "finishedLoad: Finalizing load. Preparing return.");
         Intent intent = new Intent();
         String[] sheetNames = new String[dataStorageList.size()];
@@ -123,23 +136,23 @@ public class LoadDataV2 extends AppCompatActivity {
             sheetNames[i] = sheetName;
             String actualSheetTitles = sheetName + "_names";
             // Ex: chapas_titles: ['nombre', 'corte', 'plegado']
-            intent.putExtra(actualSheetTitles.toLowerCase(Locale.ROOT).replaceAll(" ", "_"), UtilService.parseArrayToString(rowsNames));
+            intent.putExtra(actualSheetTitles.toLowerCase(Locale.ROOT)
+                    .replaceAll(" ", "_"), UtilService.parseArrayToString(rowsNames));
             addRowsToIntent(rows, sheetName, rowsNames, intent);
             Log.d(TAG, "finishedLoad: Sheet loaded: " + sheetName);
         }
         intent.putExtra("sheets_names", UtilService.parseArrayToString(sheetNames));
-        setResult(RESULT_OK, intent);
         Log.d(TAG, "finishedLoad: All sheets loaded");
-        finish();
+        LoadDataV2.saveCache(sharedPreferences, intent);
     }
 
-    private void addRowsToIntent(String[] rows, String sheetName, String[] columnNames, Intent intent) {
+    private static void addRowsToIntent(String[] rows, String sheetName, String[] columnNames, Intent intent) {
         List<String[]> columnList = new ArrayList<>();
         for (int i = 1; i < rows.length; i++) {
             String[] valuesInRow = UtilService.splitAsArray(rows[i]);
             for (int j = 0; j < columnNames.length; j++) {
                 String[] column = new String[rows.length - 1];
-                if(columnList != null && !columnList.isEmpty() && j <= columnList.size() - 1) {
+                if (columnList != null && !columnList.isEmpty() && j <= columnList.size() - 1) {
                     column = columnList.get(j);
                     column[i - 1] = valuesInRow[j];
                 } else {
@@ -152,11 +165,12 @@ public class LoadDataV2 extends AppCompatActivity {
             String[] values = columnList.get(i);
             String extraName = sheetName + "_" + columnNames[i];
             // Ex: chapas_nombre: 'N22;N20;N18;N16'
-            intent.putExtra(extraName.toLowerCase(Locale.ROOT).replaceAll(" ", "_"), UtilService.parseArrayToString(values));
+            intent.putExtra(extraName.toLowerCase(Locale.ROOT)
+                    .replaceAll(" ", "_"), UtilService.parseArrayToString(values));
         }
     }
 
-    private String[] addRows(List<List<String>> rowList) {
+    private static String[] addRows(List<List<String>> rowList) {
         String[] rows = new String[rowList.size()];
         for (int i = 0; i < rowList.size(); i++) {
             rows[i] = UtilService.parseListToString(rowList.get(i));
@@ -172,16 +186,17 @@ public class LoadDataV2 extends AppCompatActivity {
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
             readSheets(workbook);
             Log.d(TAG, "readExcelData: Excel file readed.");
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             Log.d(TAG, "readExcelData: FileNotFoundException." + e.getMessage());
-        }catch (IOException e) {
+        } catch (IOException e) {
             Log.d(TAG, "readExcelData: procrastinator IOException." + e.getMessage());
         }
     }
 
     private void readSheets(XSSFWorkbook workbook) {
         Log.d(TAG, "readSheets: Start reading sheets.");
-        FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        FormulaEvaluator formulaEvaluator = workbook.getCreationHelper()
+                .createFormulaEvaluator();
         int sheetsCount = workbook.getNumberOfSheets();
         for (int i = 0; i < sheetsCount; i++) {
             DataStorage dataStorage = new DataStorage();
@@ -197,13 +212,15 @@ public class LoadDataV2 extends AppCompatActivity {
     private void checkInternalStorage() {
         Log.d(TAG, "checkInternalStorage: Started.");
         try {
-            if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            if (!Environment.getExternalStorageState()
+                    .equals(Environment.MEDIA_MOUNTED)) {
                 toastMessage("No SD card found.");
             } else {
                 file = new File(pathHistory.get(count));
                 Log.d(TAG, "checkInternalStorage: directory path: " + pathHistory.get(count));
             }
-            if(file.getName().equals("sdcard"))
+            if (file.getName()
+                    .equals("sdcard"))
                 actualDirectory.setText("/internal");
             else
                 actualDirectory.setText("/" + file.getName());
@@ -216,11 +233,11 @@ public class LoadDataV2 extends AppCompatActivity {
             Map<String, String> filesMap = new HashMap<>();
 
             for (int i = 0; i < listFile.length; i++) {
-                if(listFile[i].isDirectory()){
+                if (listFile[i].isDirectory()) {
                     pathMap.put(listFile[i].getName(), listFile[i].getAbsolutePath());
                     pathList.add("/" + listFile[i].getName());
-                }
-                else if (listFile[i].getName().endsWith(".xlsx")){
+                } else if (listFile[i].getName()
+                        .endsWith(".xlsx")) {
                     filesMap.put(listFile[i].getName(), listFile[i].getAbsolutePath());
                     fileNameList.add(listFile[i].getName());
                 }
@@ -237,7 +254,7 @@ public class LoadDataV2 extends AppCompatActivity {
             lvInternalStorage.setAdapter(customArrayAdapter);
             TextView ssd = findViewById(R.id.text_view);
             ssd.setSelected(true);
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             Log.e(TAG, "checkInternalStorage: NullPointerException" + e.getMessage());
         }
     }
@@ -248,17 +265,42 @@ public class LoadDataV2 extends AppCompatActivity {
             int permissionChecl = this.checkSelfPermission("Manifest.permission.READ_EXTERNAL_STORAGE");
             if (permissionChecl != 0) {
                 this.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1001);
-            } else{
+            } else {
                 Log.d(TAG, "checkBTPermissions:  No need to check permissions. SDK version < LLOLIPOP.");
             }
         }
     }
 
+    public static void saveCache(SharedPreferences sharedPref, Intent data) {
+        int extrasCount = data.getExtras()
+                .size();
+        SharedPreferences.Editor editor = sharedPref.edit();
+        List<String> keys = new ArrayList<>(data.getExtras()
+                .keySet());
+        for (int i = 0; i < extrasCount; i++) {
+            editor.putString(keys.get(i), data.getStringExtra(keys.get(i)));
+        }
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy'T'HH:mm");
+        editor.putBoolean("loaded_data_key", true);
+        editor.putString("last_loaded", dateFormat.format(calendar.getTime()));
+        editor.apply();
+    }
+
+    private static void unsaveCache(SharedPreferences sharedPref) {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.clear().apply();
+        editor.putBoolean("loaded_data_key", false);
+        editor.apply();
+    }
+
     /**
      * Customizable toast
+     *
      * @param message
      */
     private void toastMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT)
+                .show();
     }
 }
