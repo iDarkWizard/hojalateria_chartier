@@ -1,13 +1,11 @@
 package com.idarkwizard.calculatorapp.config;
 
-import android.content.SharedPreferences;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.idarkwizard.calculatorapp.fragments.AbstractFragment;
+import com.idarkwizard.calculatorapp.layout.fragments.AbstractFragment;
 
 import java.util.List;
 import java.util.Map;

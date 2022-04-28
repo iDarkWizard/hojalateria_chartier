@@ -2,196 +2,299 @@ package com.idarkwizard.calculatorapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.idarkwizard.calculatorapp.config.LoadData;
-import com.idarkwizard.calculatorapp.config.LoadDataV2;
+import com.idarkwizard.calculatorapp.config.CustomArrayAdapter;
 import com.idarkwizard.calculatorapp.domain.DataStorage;
+import com.idarkwizard.calculatorapp.service.UtilService;
 
-import java.io.BufferedInputStream;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Locale;
+import java.util.Map;
 
 public class LoadDataActivity extends AppCompatActivity {
 
-    public static final int PROGRESS_BAR_TYPE = 0;
-    private static final String TAG = "SplashScreen";
-    private static final String DATA_URL = "https://github.com/iDarkWizard/hojalateria_chartier/blob/main/app/src" +
-            "/main/res/raw/data.xlsx?raw=true";
+    private static final String TAG = "LoadData";
+    File file;
+    View directoryBackBtn;
+    ArrayList<String> pathHistory;
+    TextView actualDirectory;
+    String lastDirectory;
+    int count = 0;
+    ListView lvInternalStorage;
     private List<DataStorage> dataStorageList;
-    private Context context;
-    private ProgressDialog pDialog;
+    private List<String> pathList, fileNameList;
+    private File[] listFile;
 
-    private SharedPreferences sharedPref;
-
-    public void onCreate(Bundle savedInstanceState) {
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: new Activity created");
         super.onCreate(savedInstanceState);
-        context = this;
-        setContentView(R.layout.load_data_layout);
+        setContentView(R.layout.load_data_list_layout);
         getSupportActionBar().hide();
-
-        View ignoreBtn = findViewById(R.id.ignore_btn);
-        View loadBtn = findViewById(R.id.load_btn);
-
-        loadBtn.setOnClickListener(view -> {
-            Log.d(TAG, "loadBtn.onClickListener: Starting new activity for result");
-            startActivityForResult(new Intent(view.getContext(), LoadDataV2.class), 0);
-        });
-
-        ignoreBtn.setOnClickListener(view -> {
-            ignoreBtn.setElevation(20);
-            startHome();
-        });
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (data == null)
-            return;
-        startHome();
-    }
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case PROGRESS_BAR_TYPE: // we set this to 0
-                pDialog = new ProgressDialog(this);
-                pDialog.setMessage("Downloading file. Please wait...");
-                pDialog.setIndeterminate(false);
-                pDialog.setMax(100);
-                pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                pDialog.setCancelable(true);
-                pDialog.show();
-                return pDialog;
-            default:
-                return null;
-        }
-    }
-
-    @SuppressLint("NewApi")
-    private void startHome() {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+        lvInternalStorage = findViewById(R.id.files_list);
+        directoryBackBtn = findViewById(R.id.files_list_back_btn);
+        actualDirectory = findViewById(R.id.actual_directory);
         dataStorageList = new ArrayList<>();
-        new DownloadService().execute(DATA_URL);
-    }
+        Log.d(TAG, "onCreate: ready to import data");
+        checkFilePermissions();
+        showStorage();
 
-    class DownloadService extends AsyncTask<String, String, String> {
-
-        @Override
-        protected void onPreExecute() {
-            try {
-                new FilerPermissions().execute("file_permssions").get();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        directoryBackBtn.setOnClickListener(view -> {
+            Log.d(TAG, "directoryBackBtn.onClickListener: Going back");
+            if (count == 0) {
+                Log.d(TAG, "directoryBackBtn: You have reached the root directory.");
+                finish();
+                return;
             }
-            super.onPreExecute();
-            showDialog(PROGRESS_BAR_TYPE);
-        }
+            pathHistory.remove(count);
+            count--;
+            checkInternalStorage();
+            Log.d(TAG, "directoryBackBtn: " + pathHistory.get(count));
+        });
 
-        @Override
-        protected String doInBackground(String... f_url) {
-            int count;
-            try {
-                URL url = new URL(f_url[0]);
-                URLConnection connection = url.openConnection();
-                connection.connect();
-                int lengthOfFile = connection.getContentLength();
-                InputStream input = new BufferedInputStream(url.openStream(),
-                        9642);
-                OutputStream output = openFileOutput("data.xlsx", MODE_PRIVATE);
-
-                byte data[] = new byte[1024];
-                long total = 0;
-                while ((count = input.read(data)) != -1) {
-                    total += count;
-                    publishProgress("" + (int) ((total * 100) / lengthOfFile));
-                    output.write(data, 0, count);
+        lvInternalStorage.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                lastDirectory = pathHistory.get(count);
+                if (adapterView.getItemAtPosition(i)
+                        .toString()
+                        .endsWith(".xlsx")) {
+                    Log.d(TAG, "lvInternalStorage: Selected a file for upload: " + lastDirectory);
+                    readExcelData(lastDirectory + "/" + adapterView.getItemAtPosition(i)
+                            .toString());
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+                    LoadDataActivity.unsaveCache(sharedPreferences);
+                    finishLoad(dataStorageList, sharedPreferences, view.getContext());
+                    startActivity(new Intent(view.getContext(), HomeActivity.class));
+                } else {
+                    String newPath = pathHistory.get(count) + (String) adapterView.getItemAtPosition(i);
+                    count++;
+                    pathHistory.add(count, newPath);
+                    checkInternalStorage();
+                    Log.d(TAG, "lvInternalStorage: " + pathHistory.get(count));
                 }
-                output.flush();
-                output.close();
-                input.close();
-            } catch (Exception e) {
-                Log.e("Error: ", e.getMessage());
             }
+        });
+    }
 
-            return null;
+    private void showStorage() {
+        Log.d(TAG, "startLoad: Loading storage");
+        count = 0;
+        pathHistory = new ArrayList<>();
+        pathHistory.add(count, System.getenv("EXTERNAL_STORAGE"));
+        Log.d(TAG, "storageBtn: " + pathHistory.get(count));
+        checkInternalStorage();
+    }
+
+    public static void finishLoad(List<DataStorage> dataStorageList, SharedPreferences sharedPreferences,
+                               Context context) {
+        Log.d(TAG, "finishedLoad: Finalizing load. Preparing return.");
+        Intent intent = new Intent();
+        String[] sheetNames = new String[dataStorageList.size()];
+        Log.d(TAG, "finishedLoad: Loading : " + dataStorageList.size() + "sheets.");
+        for (int i = 0; i < dataStorageList.size(); i++) {
+            DataStorage dataStorage = dataStorageList.get(i);
+            String sheetName = dataStorage.getSheetName();
+            Log.d(TAG, "finishedLoad: Loading sheet: " + sheetName);
+            String[] rows = addRows(dataStorage.getRowList());
+            String[] rowsNames = UtilService.splitAsArray(rows[0]);
+            sheetNames[i] = sheetName;
+            String actualSheetTitles = sheetName + "_names";
+            // Ex: chapas_titles: ['nombre', 'corte', 'plegado']
+            intent.putExtra(actualSheetTitles.toLowerCase(Locale.ROOT)
+                    .replaceAll(" ", "_"), UtilService.parseArrayToString(rowsNames));
+            addRowsToIntent(rows, sheetName, rowsNames, intent);
+            Log.d(TAG, "finishedLoad: Sheet loaded: " + sheetName);
         }
+        intent.putExtra("sheets_names", UtilService.parseArrayToString(sheetNames));
+        Log.d(TAG, "finishedLoad: All sheets loaded");
+        LoadDataActivity.saveCache(sharedPreferences, intent);
+    }
 
-        protected void onProgressUpdate(String... progress) {
-            pDialog.setProgress(Integer.parseInt(progress[0]));
-        }
-
-        @Override
-        protected void onPostExecute(String file_url) {
-            super.onPostExecute(file_url);
-            InputStream file = null;
-            try {
-                file = new FileInputStream("/data/user/0/com.idarkwizard.calculatorapp/files/data.xlsx");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+    private static void addRowsToIntent(String[] rows, String sheetName, String[] columnNames, Intent intent) {
+        List<String[]> columnList = new ArrayList<>();
+        for (int i = 1; i < rows.length; i++) {
+            String[] valuesInRow = UtilService.splitAsArray(rows[i]);
+            for (int j = 0; j < columnNames.length; j++) {
+                String[] column = new String[rows.length - 1];
+                if (columnList != null && !columnList.isEmpty() && j <= columnList.size() - 1) {
+                    column = columnList.get(j);
+                    column[i - 1] = valuesInRow[j];
+                } else {
+                    column[i - 1] = valuesInRow[j];
+                    columnList.add(j, column);
+                }
             }
-            LoadData.readExcelData(file, dataStorageList);
-            LoadDataV2.finishLoad(dataStorageList, sharedPref, context);
-            startActivity(new Intent(context, MainActivity.class));
-            dismissDialog(PROGRESS_BAR_TYPE);
+        }
+        for (int i = 0; i < columnNames.length; i++) {
+            String[] values = columnList.get(i);
+            String extraName = sheetName + "_" + columnNames[i];
+            // Ex: chapas_nombre: 'N22;N20;N18;N16'
+            intent.putExtra(extraName.toLowerCase(Locale.ROOT)
+                    .replaceAll(" ", "_"), UtilService.parseArrayToString(values));
         }
     }
 
-    public class FilerPermissions extends AsyncTask<String, String, String> {
+    private static String[] addRows(List<List<String>> rowList) {
+        String[] rows = new String[rowList.size()];
+        for (int i = 0; i < rowList.size(); i++) {
+            rows[i] = UtilService.parseListToString(rowList.get(i));
+        }
+        return rows;
+    }
 
-        @Override
-        protected String doInBackground(String... strings) {
-            checkFilePermissions();
-            return "ok";
+    public void readExcelData(String filePath) {
+        Log.d(TAG, "readExcelData: ReadingExcelFile.");
+        File inputFile = new File(filePath);
+        try {
+            InputStream inputStream = new FileInputStream(inputFile);
+            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+            readSheets(workbook);
+            Log.d(TAG, "readExcelData: Excel file readed.");
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "readExcelData: FileNotFoundException." + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "readExcelData: procrastinator IOException." + e.getMessage());
+        }
+    }
+
+    private void readSheets(XSSFWorkbook workbook) {
+        Log.d(TAG, "readSheets: Start reading sheets.");
+        FormulaEvaluator formulaEvaluator = workbook.getCreationHelper()
+                .createFormulaEvaluator();
+        int sheetsCount = workbook.getNumberOfSheets();
+        for (int i = 0; i < sheetsCount; i++) {
+            DataStorage dataStorage = new DataStorage();
+            XSSFSheet actualSheet = workbook.getSheetAt(i);
+            Log.d(TAG, "readSheets: Sheet: " + i + " named: " + actualSheet.getSheetName());
+            dataStorage.readSheet(actualSheet, formulaEvaluator);
+            dataStorageList.add(dataStorage);
+            Log.d(TAG, "readSheets: Sheet finished and saved: " + actualSheet.getSheetName());
+        }
+        Log.d(TAG, "readSheets: All sheets read");
+    }
+
+    private void checkInternalStorage() {
+        Log.d(TAG, "checkInternalStorage: Started.");
+        try {
+            if (!Environment.getExternalStorageState()
+                    .equals(Environment.MEDIA_MOUNTED)) {
+                toastMessage("No SD card found.");
+            } else {
+                file = new File(pathHistory.get(count));
+                Log.d(TAG, "checkInternalStorage: directory path: " + pathHistory.get(count));
+            }
+            if (file.getName()
+                    .equals("sdcard"))
+                actualDirectory.setText("/internal");
+            else
+                actualDirectory.setText("/" + file.getName());
+            listFile = file.listFiles();
+
+            fileNameList = new ArrayList<>();
+            pathList = new ArrayList<>();
+
+            Map<String, String> pathMap = new HashMap<>();
+            Map<String, String> filesMap = new HashMap<>();
+
+            for (int i = 0; i < listFile.length; i++) {
+                if (listFile[i].isDirectory()) {
+                    pathMap.put(listFile[i].getName(), listFile[i].getAbsolutePath());
+                    pathList.add("/" + listFile[i].getName());
+                } else if (listFile[i].getName()
+                        .endsWith(".xlsx")) {
+                    filesMap.put(listFile[i].getName(), listFile[i].getAbsolutePath());
+                    fileNameList.add(listFile[i].getName());
+                }
+            }
+
+            Collections.sort(pathList);
+            Collections.sort(fileNameList);
+            pathList.addAll(fileNameList);
+            pathMap.putAll(filesMap);
+
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.single_row, R.id.text_view, pathList);
+            CustomArrayAdapter customArrayAdapter = new CustomArrayAdapter(this, pathList);
+            lvInternalStorage.setAdapter(customArrayAdapter);
+            TextView ssd = findViewById(R.id.text_view);
+            ssd.setSelected(true);
+        } catch (NullPointerException e) {
+            Log.e(TAG, "checkInternalStorage: NullPointerException" + e.getMessage());
         }
     }
 
     @SuppressLint("NewApi")
     private void checkFilePermissions() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            int readCheck = this.checkSelfPermission("Manifest.permission.READ_EXTERNAL_STORAGE");
-            int writeCheck = this.checkSelfPermission("Manifest.permission.WRITE_EXTERNAL_STORAGE");
-            if (readCheck != 0) {
+            int permissionChecl = this.checkSelfPermission("Manifest.permission.READ_EXTERNAL_STORAGE");
+            if (permissionChecl != 0) {
                 this.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1001);
-            } else {
-                Log.d(TAG, "checkBTPermissions:  No need to check permissions. SDK version < LLOLIPOP.");
-            }
-            if (writeCheck != 0) {
-                this.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1001);
             } else {
                 Log.d(TAG, "checkBTPermissions:  No need to check permissions. SDK version < LLOLIPOP.");
             }
         }
     }
 
+    public static void saveCache(SharedPreferences sharedPref, Intent data) {
+        int extrasCount = data.getExtras()
+                .size();
+        SharedPreferences.Editor editor = sharedPref.edit();
+        List<String> keys = new ArrayList<>(data.getExtras()
+                .keySet());
+        for (int i = 0; i < extrasCount; i++) {
+            editor.putString(keys.get(i), data.getStringExtra(keys.get(i)));
+        }
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy'T'HH:mm");
+        editor.putBoolean("loaded_data_key", true);
+        editor.putString("last_loaded", dateFormat.format(calendar.getTime()));
+        editor.apply();
+    }
+
+    private static void unsaveCache(SharedPreferences sharedPref) {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.clear().apply();
+        editor.putBoolean("loaded_data_key", false);
+        editor.apply();
+    }
+
+    /**
+     * Customizable toast
+     *
+     * @param message
+     */
+    private void toastMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT)
+                .show();
+    }
 }

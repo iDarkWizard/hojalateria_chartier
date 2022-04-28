@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,9 +23,9 @@ public class SplashScreen extends Activity {
             public void run() {
                 Intent intent;
                 if (isDataLoaded){
-                    intent = new Intent(SplashScreen.this, MainActivity.class);
+                    intent = new Intent(SplashScreen.this, HomeActivity.class);
                 } else {
-                    intent = new Intent(SplashScreen.this, LoadDataActivity.class);
+                    intent = new Intent(SplashScreen.this, DataNotLoadedActivity.class);
                 }
                 startActivityForResult(intent, 1);
                 finish();

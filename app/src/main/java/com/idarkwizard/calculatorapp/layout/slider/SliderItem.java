@@ -1,6 +1,4 @@
-package com.idarkwizard.calculatorapp.slider;
-
-import android.widget.TextView;
+package com.idarkwizard.calculatorapp.layout.slider;
 
 public class SliderItem {
 

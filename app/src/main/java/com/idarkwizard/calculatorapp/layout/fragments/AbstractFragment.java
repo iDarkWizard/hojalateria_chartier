@@ -1,4 +1,4 @@
-package com.idarkwizard.calculatorapp.fragments;
+package com.idarkwizard.calculatorapp.layout.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -12,18 +12,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.idarkwizard.calculatorapp.R;
-import com.idarkwizard.calculatorapp.layout.ListActivity;
+import com.idarkwizard.calculatorapp.layout.ListLayout;
 import com.idarkwizard.calculatorapp.service.CalculationService;
 import com.idarkwizard.calculatorapp.service.UtilService;
-import com.idarkwizard.calculatorapp.slider.SliderAdapter;
-import com.idarkwizard.calculatorapp.slider.SliderAdapterDefaultColor;
-import com.idarkwizard.calculatorapp.slider.SliderItem;
-
-import org.w3c.dom.Text;
+import com.idarkwizard.calculatorapp.layout.slider.SliderAdapter;
+import com.idarkwizard.calculatorapp.layout.slider.SliderAdapterDefaultColor;
+import com.idarkwizard.calculatorapp.layout.slider.SliderItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -225,7 +222,7 @@ public class AbstractFragment extends Fragment {
 
     private void inputListOnClick(View view) {
         actualView = view;
-        Intent intent = new Intent(view.getContext(), ListActivity.class);
+        Intent intent = new Intent(view.getContext(), ListLayout.class);
         String pageTitle = title.toLowerCase(Locale.ROOT)
                 .replaceAll(" ", "_");
         String columnNameKey = pageTitle + "_names";

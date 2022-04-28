@@ -1,5 +1,5 @@
 
-package com.idarkwizard.calculatorapp.slider;
+package com.idarkwizard.calculatorapp.layout.slider;
 
         import android.view.LayoutInflater;
         import android.view.View;

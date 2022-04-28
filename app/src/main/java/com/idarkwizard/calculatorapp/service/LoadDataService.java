@@ -1,11 +1,8 @@
-package com.idarkwizard.calculatorapp.config;
+package com.idarkwizard.calculatorapp.service;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.idarkwizard.calculatorapp.MainActivity;
 import com.idarkwizard.calculatorapp.domain.DataStorage;
 import com.idarkwizard.calculatorapp.service.UtilService;
 
@@ -13,8 +10,6 @@ import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class LoadData {
+public class LoadDataService {
 
     private static String TAG = "LoadData";
 
@@ -53,31 +48,6 @@ public class LoadData {
         }
         Log.d(TAG, "readSheets: All sheets read");
     }
-
-//    public static Intent finishLoad(List<DataStorage> dataStorageList, SharedPreferences sharedPreferences, Context context) {
-//        Log.d(TAG, "finishedLoad: Finalizing load. Preparing return.");
-//        Intent intent = new Intent();
-//        String[] sheetNames = new String[dataStorageList.size()];
-//        Log.d(TAG, "finishedLoad: Loading : " + dataStorageList.size() + "sheets.");
-//        for (int i = 0; i < dataStorageList.size(); i++) {
-//            DataStorage dataStorage = dataStorageList.get(i);
-//            String sheetName = dataStorage.getSheetName();
-//            Log.d(TAG, "finishedLoad: Loading sheet: " + sheetName);
-//            String[] rows = addRows(dataStorage.getRowList());
-//            String[] rowsNames = UtilService.splitAsArray(rows[0]);
-//            sheetNames[i] = sheetName;
-//            String actualSheetTitles = sheetName + "_names";
-//            // Ex: chapas_titles: ['nombre', 'corte', 'plegado']
-//            intent.putExtra(actualSheetTitles.toLowerCase(Locale.ROOT).replaceAll(" ", "_"), UtilService.parseArrayToString(rowsNames));
-//            addRowsToIntent(rows, sheetName, rowsNames, intent);
-//            Log.d(TAG, "finishedLoad: Sheet loaded: " + sheetName);
-//        }
-//        intent.putExtra("sheets_names", UtilService.parseArrayToString(sheetNames));
-//        Log.d(TAG, "finishedLoad: All sheets loaded");
-//        LoadDataV2.saveCache(sharedPreferences, intent);
-//        startActivity(new Intent(context, MainActivity.class));
-//        return intent;
-//    }
 
     private static void addRowsToIntent(String[] rows, String sheetName, String[] columnNames, Intent intent) {
         List<String[]> columnList = new ArrayList<>();

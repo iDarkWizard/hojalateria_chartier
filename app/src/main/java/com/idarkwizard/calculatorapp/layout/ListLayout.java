@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ListActivity extends AppCompatActivity {
+public class ListLayout extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
