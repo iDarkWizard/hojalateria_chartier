@@ -1,4 +1,5 @@
 <resources>
+    <string name="api_version">Version: 1.0.0</string>
     <string name="app_name">ChartierApp</string>
     <string name="plate_layout">Chapas</string>
     <string name="steel_layout">Acero Inoxidable</string>

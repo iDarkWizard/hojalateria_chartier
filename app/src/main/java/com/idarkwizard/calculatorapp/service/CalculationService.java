@@ -27,7 +27,9 @@ public class CalculationService {
                                                  "Fraccionado: %.2f $",
                                                  "Entero: %.2f $"};
     private static final String[] STEELS = {"Precio B: %.2f $",
-                                            "Precio 0: %.2f $"};
+                                            "Precio 0: %.2f $",
+                                            "Precio B plegado: %.2f $",
+                                            "Precio O plegado: %.2f $"};
     private static final String TRAY = "Bandeja: %.2f $";
     private static final String TABLE = "Forrar mesa: %.2f $";
 
@@ -64,7 +66,7 @@ public class CalculationService {
                 results = buildPlates(width, length, quantity, selected, itemsToCalculate);
                 break;
             case "acero_inoxidable":
-                results =  buildSteels(width, length, itemsToCalculate);
+                results =  buildSteels(width, length, quantity, itemsToCalculate);
                 break;
             case "forrar_mesa":
                 results =  buildTable(width, length, quantity, itemsToCalculate);
@@ -122,23 +124,23 @@ public class CalculationService {
         return results;
     }
 
-    private static List<String> buildSteels(Double width, Double length,
+    private static List<String> buildSteels(Double width, Double length, Integer quantity,
                                             List<Double> itemsToCalculate) {
         Double basicResult = width * length;
-        Double shinyResult = basicResult * itemsToCalculate.get(STEEL_SHINY_INDEX);
-        Double opaqueResult = basicResult * itemsToCalculate.get(STEEL_OPAQUE_INDEX);
+        Double shinyResult = basicResult * itemsToCalculate.get(STEEL_SHINY_INDEX) * quantity;
+        Double opaqueResult = basicResult * itemsToCalculate.get(STEEL_OPAQUE_INDEX) * quantity;
+        Double shinyFolded = shinyResult * 1.1;
+        Double opaqueFolded = opaqueResult * 1.08;
 
         List<String> results = new ArrayList<>();
-        results.add(String.format(STEELS[0], shinyResult));
-        results.add(String.format(STEELS[1], opaqueResult));
-        if(shinyResult < 0){
-            results.remove(0);
-            if (opaqueResult < 0)
-                results.remove(0);
-        } else if (opaqueResult < 0){
-            results.remove(1);
+        if (shinyResult > 0) {
+            results.add(String.format(STEELS[0], shinyResult));
+            results.add(String.format(STEELS[2], shinyFolded));
         }
-
+        if (opaqueResult > 0) {
+            results.add(String.format(STEELS[1], opaqueResult));
+            results.add(String.format(STEELS[3], opaqueFolded));
+        }
         return results;
     }
 

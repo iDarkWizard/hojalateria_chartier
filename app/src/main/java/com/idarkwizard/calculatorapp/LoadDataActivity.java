@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.idarkwizard.calculatorapp.config.CustomArrayAdapter;
 import com.idarkwizard.calculatorapp.domain.DataStorage;
+import com.idarkwizard.calculatorapp.service.DownloadService;
 import com.idarkwizard.calculatorapp.service.UtilService;
 
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
@@ -92,7 +93,7 @@ public class LoadDataActivity extends AppCompatActivity {
                     readExcelData(lastDirectory + "/" + adapterView.getItemAtPosition(i)
                             .toString());
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(view.getContext());
-                    LoadDataActivity.unsaveCache(sharedPreferences);
+                    DownloadService.unsaveCache(sharedPreferences);
                     finishLoad(dataStorageList, sharedPreferences, view.getContext());
                     startActivity(new Intent(view.getContext(), HomeActivity.class));
                 } else {
@@ -278,13 +279,6 @@ public class LoadDataActivity extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy'T'HH:mm");
         editor.putBoolean("loaded_data_key", true);
         editor.putString("last_loaded", dateFormat.format(calendar.getTime()));
-        editor.apply();
-    }
-
-    private static void unsaveCache(SharedPreferences sharedPref) {
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.clear().apply();
-        editor.putBoolean("loaded_data_key", false);
         editor.apply();
     }
 

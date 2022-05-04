@@ -119,8 +119,8 @@ public class AbstractFragment extends Fragment {
                 return inflater.inflate(R.layout.tables_fragment, container, false);
             case "bandeja":
                 return inflater.inflate(R.layout.trays_fragment, container, false);
-            case "acero_inoxidable":
-                return inflater.inflate(R.layout.steels_fragment, container, false);
+//            case "acero_inoxidable":
+//                return inflater.inflate(R.layout.steels_fragment, container, false);
             case "chapa_galvanizada":
                 return inflater.inflate(R.layout.galvanizadas_fragment, container, false);
             default:

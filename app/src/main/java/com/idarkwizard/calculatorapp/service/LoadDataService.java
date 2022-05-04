@@ -3,6 +3,8 @@ package com.idarkwizard.calculatorapp.service;
 import android.content.Intent;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.idarkwizard.calculatorapp.domain.DataStorage;
 import com.idarkwizard.calculatorapp.service.UtilService;
 
@@ -21,7 +23,7 @@ public class LoadDataService {
 
     private static String TAG = "LoadData";
 
-    public static void readExcelData(InputStream inputStream, List<DataStorage> dataStorageList) {
+    public static void readExcelData(@NonNull InputStream inputStream, List<DataStorage> dataStorageList) {
         Log.d(TAG, "readExcelData: ReadingExcelFile.");
         try {
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
