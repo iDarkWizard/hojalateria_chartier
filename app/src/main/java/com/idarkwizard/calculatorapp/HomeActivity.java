@@ -3,6 +3,7 @@ package com.idarkwizard.calculatorapp;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -93,8 +94,8 @@ public class HomeActivity extends AppCompatActivity {
         final TextView showVersion = dialog.findViewById(R.id.show_version_setting);
         final TextView unloadData = dialog.findViewById(R.id.unload_data_setting);
 
-        final View loadDataBackground = dialog.findViewById(R.id.load_data_setting_background);
-        final View showVersionBackground = dialog.findViewById(R.id.show_version_setting_background);
+        View loadDataBackground = dialog.findViewById(R.id.load_data_setting_background);
+        View showVersionBackground = dialog.findViewById(R.id.show_version_setting_background);
 
         loadData.setOnClickListener((view) -> {
             loadDataBackground.setElevation(20);
@@ -110,12 +111,18 @@ public class HomeActivity extends AppCompatActivity {
             dialog.cancel();
         });
 
+        unloadData.setOnClickListener((view) -> {
+            loadDataBackground.setElevation(20);
+            loadData.setElevation(20);
+            showUnloadDataDialog();
+            dialog.cancel();
+        });
 
         dialog.show();
     }
 
     private void showLoadDataDialog() {
-        Log.i("THIS", "Showing version dialog");
+        Log.i("THIS", "Showing load dialog");
         final Dialog dialog = new Dialog(HomeActivity.this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(true);
@@ -143,6 +150,26 @@ public class HomeActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void showUnloadDataDialog() {
+        Log.i("THIS", "Showing unload dialog");
+        final Dialog dialog = new Dialog(HomeActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.unload_data_setting);
+
+        final TextView deleteBtn = dialog.findViewById(R.id.delete_btn);
+        final View cancelBtn = dialog.findViewById(R.id.cancel_btn);
+
+        deleteBtn.setOnClickListener((view) -> {
+            DownloadService.unsaveCache(sharedPreferences);
+            startActivity(new Intent(this, DataNotLoadedActivity.class));
+            dialog.cancel();
+        });
+
+        cancelBtn.setOnClickListener((view) -> {dialog.cancel();});
+        dialog.show();
+    }
+
     private void download() {
         DownloadService ds = new DownloadService(this);
         ds.startDownload();
@@ -155,8 +182,8 @@ public class HomeActivity extends AppCompatActivity {
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.version);
 
-        final TextView version = dialog.findViewById(R.id.version);
-        version.setText(getResources().getString(R.string.api_version));
+        final TextView lastUpdated = dialog.findViewById(R.id.last_updated_value);
+        lastUpdated.setText(sharedPreferences.getString("last_loaded", null));
 
         dialog.show();
     }

@@ -1,5 +1,7 @@
 <resources>
     <string name="api_version">Version: 1.0.0</string>
+    <string name="last_loaded">Última carga:</string>
+    <string name="last_loaded_value">Última carga:</string>
     <string name="app_name">ChartierApp</string>
     <string name="plate_layout">Chapas</string>
     <string name="steel_layout">Acero Inoxidable</string>
@@ -15,7 +17,10 @@
     <string name="list_input_default">Seleccione</string>
     <string name="splash_screen_title">Datos sin cargar</string>
     <string name="splash_screen_dialog">Antes de empezar carguemos la información necesaria.</string>
+    <string name="delete_screen_dialog">Esta acción borrará todos los datos de la app.\n¿Desea continuar?</string>
     <string name="load_btn">CARGAR</string>
+    <string name="cancel_btn">CANCELAR</string>
+    <string name="delete_btn">BORRAR</string>
     <string name="calc_btn">CALCULAR</string>
     <string name="ignore_btn">IGNORAR</string>
     <string name="results_title">Resultado</string>

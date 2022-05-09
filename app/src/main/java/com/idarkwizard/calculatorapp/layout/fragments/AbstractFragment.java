@@ -59,8 +59,6 @@ public class AbstractFragment extends Fragment {
     EditText quantity;
     TextView thickness;
 
-//    private List<String>
-
     public AbstractFragment() {
         // Required empty public constructor
     }
@@ -104,7 +102,7 @@ public class AbstractFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         loadData();
-        View view = loadLayouts(inflater, container, savedInstanceState);
+        View view = loadLayouts(inflater, container);
         this.width = view.findViewById(R.id.width_edit_text);
         this.length = view.findViewById(R.id.length_edit_text);
         this.quantity = view.findViewById(R.id.quantity_edit_text);
@@ -112,17 +110,11 @@ public class AbstractFragment extends Fragment {
         return view;
     }
 
-    private View loadLayouts(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    private View loadLayouts(LayoutInflater inflater, ViewGroup container) {
         switch (rootDataKey) {
             case "forrar_mesa":
-                return inflater.inflate(R.layout.tables_fragment, container, false);
             case "bandeja":
-                return inflater.inflate(R.layout.trays_fragment, container, false);
-//            case "acero_inoxidable":
-//                return inflater.inflate(R.layout.steels_fragment, container, false);
-            case "chapa_galvanizada":
-                return inflater.inflate(R.layout.galvanizadas_fragment, container, false);
+                return inflater.inflate(R.layout.main_fragment_variant, container, false);
             default:
                 return inflater.inflate(R.layout.main_fragment, container, false);
         }
