@@ -1,2 +1,2 @@
 # hojalateria_chartier
-App para calcular costos de
+App para calcular costos de materiales
